@@ -54,6 +54,10 @@ def newline(n=1):
     for x in range(n):
         print()
 
+if not sys.argv[1]:
+    print("You didn't open this program with a file, either drag a .model onto the program to drag it as your arg in cmd")
+    input("Press Enter to close...")
+    exit()
 
 try:
     file = sys.argv[1]
