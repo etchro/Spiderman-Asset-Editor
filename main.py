@@ -76,7 +76,7 @@ def drop_Func(event):
 
 
 root = tkinterdnd2.Tk()
-root.title('Spiderman Editor')
+root.title('Spiderman Asset Editor')
 root.call('wm', 'iconphoto', root._w, PhotoImage(file='smpceditoricon.png'))
 
 style=ttk.Style()
@@ -93,15 +93,6 @@ IFrame.dnd_bind('<<Drop>>', drop_Func)
 #IFrame.
 my_notebook.add(IFrame, text="Startup")
 
-# closebutton=tkinter.Button(IFrame, text="Close File", anchor=NE)
-# closebutton.pack(fill=BOTH)
-
-
-
-#canvas = Canvas(root, height=800, width=1200, bg="#232023", bd=0, highlightthickness=0, relief='ridge')
-#canvas = Canvas(my_notebook.page1)
-#canvas.pack(fill="both", expand=True)
-
 
 menubar = Menu(root)
 root.config(menu=menubar)
@@ -110,6 +101,7 @@ root.config(menu=menubar)
 file_menu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="File", menu=file_menu)
 file_menu.add_command(label="Open File", command=lambda: openFile(my_notebook, root))
+file_menu.add_command(label="Save File", command=lambda: saveFile(my_notebook, root))
 file_menu.add_separator()
 file_menu.add_command(label="Exit", command=exit)
 
@@ -119,9 +111,17 @@ edit_menu.add_command(label="Cut", command=donothing)
 edit_menu.add_command(label="Copy", command=donothing)
 edit_menu.add_command(label="Paste", command=donothing)
 
+about_menu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="About", menu=about_menu)
+about_menu.add_command(label="About", command=aboutinfo)
+
+
 status = Label(root, text="Version 1.00" + "by bleedn", bg="#000000", fg="#bec2cb")
 status.pack(fill=BOTH)
 
+undo=True
+autoseparators=True
+maxundo=-1
 
 root.configure(bg="#000000")
 root.mainloop()
@@ -137,42 +137,7 @@ atexit.register(exit_handler)
 # try:
 #     file = sys.argv[1]
 #     f = open(file, 'rb')
-#     f.seek(44)
-#     fileSize = Int32(f)
-#     sectionsamount = UInt32(f)
-#     endstringseco = 0
-#     endstringstatico = 0
-#     for i in range(sectionsamount):
-#         inlist = False
-#         sectiontype = UInt32(f)
-#         sectionoffset = UInt32(f)
-#         sectionsize = UInt32(f)
-#         if sectiontype == 4023987816:
-#             endstringseco = sectionoffset
-#         elif sectiontype == 675087235:
-#             endstringstatico = sectionoffset
-#     f.seek(52 + (sectionsamount * 12) + 17)
-#     if not endstringseco == 0:
-#         stringread = (endstringseco + 40) - (52 + (sectionsamount * 12) + 17)
-#     else:
-#         stringread = (endstringstatico + 40) - (52 + (sectionsamount * 12) + 17)
-#     strings = f.read(stringread - 4)
-#     strings = strings.decode('utf-8')
-#     DataEntrys = strings.split("\x00")
-#     MaterialPaths = []
-#     for i in DataEntrys:
-#         if ".material" in i:
-#             MaterialPaths.append(DataEntrys.index(i))
 #
-#     if not MaterialPaths:
-#         print("Model has no material slots")
-#     else:
-#         for loop, i in enumerate(MaterialPaths):
-#             print("Material Slot " + str(loop) + ": " + str(DataEntrys[i]))
-#
-# except:
-#     print('error')
-#     pass
 #
 # input("Press Enter to close...")
 # f.close()
