@@ -1,14 +1,11 @@
-import sys
-import struct
-import atexit
 import tkinterdnd2
-from tkinter import *
 from tkinter import ttk
-from tkinterdnd2 import *
 from functions import *
 global my_notebook
 global root
 global event
+from sys import exit
+
 
 # Open to see functions I used
 def UInt32(f):
@@ -77,7 +74,7 @@ def drop_Func(event):
 
 root = tkinterdnd2.Tk()
 root.title('Spiderman Asset Editor')
-root.call('wm', 'iconphoto', root._w, PhotoImage(file='smpceditoricon.png'))
+#root.iconbitmap('./smpceditoricon.ico')
 
 style=ttk.Style()
 style.layout("TNotebook", [])
@@ -101,7 +98,7 @@ root.config(menu=menubar)
 file_menu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="File", menu=file_menu)
 file_menu.add_command(label="Open File", command=lambda: openFile(my_notebook, root))
-file_menu.add_command(label="Save File", command=lambda: saveFile(my_notebook, root))
+file_menu.add_command(label="Save File", command=lambda: saveFile(my_notebook, root, True))
 file_menu.add_separator()
 file_menu.add_command(label="Exit", command=exit)
 
@@ -123,17 +120,25 @@ undo=True
 autoseparators=True
 maxundo=-1
 
+def on_closing():
+    if not len(my_notebook.tabs())>1:
+        root.destroy()
+        pass
+        return
+    savev = saveFile(my_notebook, root, False)
+    if savev.bool == True :
+        root.destroy()
+        pass
+    else:
+        if messagebox.askokcancel("Quit", "Are you sure you want to quit? You have unsaved files!"):
+            root.destroy()
+        else:
+            pass
+
+root.protocol("WM_DELETE_WINDOW", on_closing)
 root.configure(bg="#000000")
 root.mainloop()
 
-def exit_handler():
-    try:
-        File.Obj.close
-        print(my_notebook.tabs())
-    except:
-        pass
-
-atexit.register(exit_handler)
 # try:
 #     file = sys.argv[1]
 #     f = open(file, 'rb')

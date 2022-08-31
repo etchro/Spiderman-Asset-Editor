@@ -15,3 +15,8 @@ class NewFrame:
         self.bg = bg
         self.self = Frame(notebook, width, height, bg)
 
+class SaveClass:
+    def __init__(self, bool, newpath, newmat):
+        self.bool = bool
+        self.newpath = newpath
+        self.newmat = newmat
