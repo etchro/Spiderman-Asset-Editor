@@ -6,7 +6,8 @@ global root
 global event
 from sys import exit
 import sv_ttk
-
+import base64
+import requests
 
 # Open to see functions I used
 def UInt32(f):
@@ -81,7 +82,10 @@ root.title('Spiderman Asset Editor')
 
 import ctypes as ct
 
-
+versioning = 'https://raw.githubusercontent.com/bleedn/Spiderman-Model-Material-Parser/main/versioninfo.txt'
+req = requests.get(versioning)
+req = req.text
+print(req)
 def dark_title_bar(window):
     window.update()
     DWMWA_USE_IMMERSIVE_DARK_MODE = 20
