@@ -1,2 +1,0 @@
-version: Alpha
-versioninfo: Test
