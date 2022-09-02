@@ -1,3 +1,5 @@
+import webbrowser
+
 import tkinterdnd2
 from functions import *
 
@@ -86,53 +88,6 @@ root.title('Spiderman Asset Editor')
 import ctypes as ct
 
 
-def get_datadir() -> pathlib.Path:
-
-    """
-    Returns a parent directory path
-    where persistent application data can be stored.
-
-    # linux: ~/.local/share
-    # macOS: ~/Library/Application Support
-    # windows: C:/Users/<USER>/AppData/Roaming
-    """
-
-    home = pathlib.Path.home()
-
-    if sys.platform == "win32":
-        return home / "AppData/Roaming"
-    elif sys.platform == "linux":
-        return home / ".local/share"
-    elif sys.platform == "darwin":
-        return home / "Library/Application Support"
-
-# create your program's directory
-
-my_datadir = get_datadir() / "SMPCEditor"
-print(my_datadir)
-def verisoning():
-    programversion = 'Alpha'
-    completename = os.path.join(my_datadir, 'VersionInfo' + '.txt')
-    if exists(completename):
-        newestversion = 'https://raw.githubusercontent.com/bleedn/Spiderman-Model-Material-Parser/dev/versioning/versioning.txt'
-        req = requests.get(newestversion)
-        req = req.text
-        versioninfo = open(completename, 'r')
-        currentversion = versioninfo.read()
-        print(req)
-        print(currentversion)
-        if not currentversion == req:
-            print("not newest")
-        else:
-            pass
-    else:
-        my_datadir.mkdir(parents=True)
-        versioninfo = open(completename, 'w')
-        versioninfo.write(programversion)
-        versioninfo.close()
-
-
-verisoning()
 def dark_title_bar(window):
     window.update()
     DWMWA_USE_IMMERSIVE_DARK_MODE = 20
@@ -163,6 +118,7 @@ IFrame.drop_target_register(DND_FILES)
 IFrame.dnd_bind('<<Drop>>', drop_Func)
 IFrame.pack_propagate(False)
 my_notebook.add(IFrame, text="Startup")
+
 
 menubar = Menu(root, tearoff=0, background='black', fg='black')
 root.config(menu=menubar, highlightcolor='black')
@@ -207,6 +163,69 @@ undo = True
 autoseparators = True
 maxundo = -1
 
+
+def get_datadir() -> pathlib.Path:
+
+    """
+    Returns a parent directory path
+    where persistent application data can be stored.
+
+    # linux: ~/.local/share
+    # macOS: ~/Library/Application Support
+    # windows: C:/Users/<USER>/AppData/Roaming
+    """
+
+    home = pathlib.Path.home()
+
+    if sys.platform == "win32":
+        return home / "AppData/Roaming"
+    elif sys.platform == "linux":
+        return home / ".local/share"
+    elif sys.platform == "darwin":
+        return home / "Library/Application Support"
+
+# create your program's directory
+
+my_datadir = get_datadir() / "SMPCEditor"
+print(my_datadir)
+
+global programversion
+programversion = 'Alpha'
+def verisoning():
+    def checkversion():
+        newestversion = 'https://raw.githubusercontent.com/bleedn/Spiderman-Model-Material-Parser/dev/versioning/versioning.txt'
+        req = requests.get(newestversion)
+        req = req.text
+        versioninfo = open(completename, 'r')
+        currentversion = versioninfo.read()
+        versioninfo.close()
+        if not currentversion == req:
+            print("not newest")
+            update = messagebox.askquestion(title='Update Available!',
+                                            message='There is an update available for the SMPC Asset Editor! Would you like to go to the releases page?')
+            if update == 'yes':
+                webbrowser.open(url='https://github.com/bleedn/Spiderman-Model-Material-Parser/releases/latest',
+                                new=0, autoraise=True)
+            else:
+                pass
+            os.remove(completename)
+            os.rmdir(my_datadir)
+        else:
+            pass
+    global programversion
+    completename = os.path.join(my_datadir, 'VersionInfo' + '.txt')
+    if exists(completename):
+            checkversion()
+    else:
+        my_datadir.mkdir(parents=True)
+        versioninfo = open(completename, 'w')
+        versioninfo.write(programversion)
+        versioninfo.close()
+        del versioninfo
+        checkversion()
+
+
+verisoning()
 
 def on_closing():
     if not len(my_notebook.tabs()) > 1:
