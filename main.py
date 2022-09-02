@@ -8,6 +8,9 @@ from sys import exit
 import sv_ttk
 import base64
 import requests
+import sys
+import pathlib
+from os.path import exists
 
 # Open to see functions I used
 def UInt32(f):
@@ -82,10 +85,44 @@ root.title('Spiderman Asset Editor')
 
 import ctypes as ct
 
-versioning = 'https://raw.githubusercontent.com/bleedn/Spiderman-Model-Material-Parser/main/versioninfo.txt'
-req = requests.get(versioning)
-req = req.text
-print(req)
+
+def get_datadir() -> pathlib.Path:
+
+    """
+    Returns a parent directory path
+    where persistent application data can be stored.
+
+    # linux: ~/.local/share
+    # macOS: ~/Library/Application Support
+    # windows: C:/Users/<USER>/AppData/Roaming
+    """
+
+    home = pathlib.Path.home()
+
+    if sys.platform == "win32":
+        return home / "AppData/Roaming"
+    elif sys.platform == "linux":
+        return home / ".local/share"
+    elif sys.platform == "darwin":
+        return home / "Library/Application Support"
+
+# create your program's directory
+
+my_datadir = get_datadir() / "SMPCEditor"
+print(my_datadir)
+def verisoning():
+    programversion = 'Alpha'
+    completename = os.path.join(my_datadir, 'VersionInfo' + '.txt')
+    if exists(completename):
+        versioning = 'https://raw.githubusercontent.com/bleedn/Spiderman-Model-Material-Parser/dev/versioning/versioning.txt'
+    else:
+        my_datadir.mkdir(parents=True)
+        versioninfo = open(completename, 'w')
+        versioninfo.write(programversion)
+        versioninfo.close()
+
+
+verisoning()
 def dark_title_bar(window):
     window.update()
     DWMWA_USE_IMMERSIVE_DARK_MODE = 20
