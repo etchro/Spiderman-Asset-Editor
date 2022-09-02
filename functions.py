@@ -4,6 +4,7 @@ from tkinter import filedialog, messagebox
 import os
 from tkinter.filedialog import asksaveasfile
 import math
+from tkinter import ttk
 
 from classes import *
 from tkinterdnd2 import *
@@ -28,7 +29,8 @@ global MatEntryColl
 global MatButtonColl
 
 global NewMaterials
-global Open
+global Open  # Globals
+
 Open = False
 
 TabID = []
@@ -42,7 +44,7 @@ secNameArr = ["Vertices", "Model Information", "Faces", "Config End", "Config Be
 configtypeArr = [10, 12]
 OffsetData = ["Data Table", "Awards"]
 configdatao = 0
-DataEntrys = 0
+DataEntrys = 0  # Variables
 
 
 def callback(input):
@@ -118,48 +120,13 @@ def clamp(num, min_value, max_value):
     return max(min(num, max_value), min_value)
 
 
-def openFile(notebook, root):
-    global File
-    global NCan
-    global NFrame
-    global TabOBJ
-    global TabID
-    fo = filedialog.askopenfilename(title="Select File", filetypes=(("model files", "*.model"), ("all files", "*")))
-    exists = False
-    CheckFile = NewFile(open(fo, 'rb'), pathlib.Path(fo).suffix, os.path.basename(str(fo)), fo)
-    if CheckFile.Name in TabOBJ:
-        exists = True
-        index = TabOBJ.index(CheckFile.Name)
-    if not exists:
-        try:
-            File = NewFile(open(fo, 'rb'), pathlib.Path(fo).suffix, os.path.basename(str(fo)), fo)
-            NFrame = Frame(width=1200, height=800, bg="#232023")
-            notebook.add(NFrame, text=File.Name)
-            TabOBJ.append(File.Name)
-            intvar = len(notebook.tabs())
-            intvar -= 1
-            TabID.append(intvar)
-            print(TabID)
-            selectvar = TabID.index(intvar)
-            notebook.select(TabID[selectvar])
-        except:
-            pass
-            print("error")
-    else:
-        try:
-            del CheckFile
-            notebook.select(TabID[index])
-        except:
-            print("error")
-
-
 def setText(e, t):
     e.delete(0, END)
     e.insert(0, t)
 
 
 def donothing():
-    pass
+    pass  # Functions
 
 
 def Get_Info(file, ftype):
@@ -168,226 +135,240 @@ def Get_Info(file, ftype):
     global DataEntrys
     global OffsetData
     OffsetData = []
-    try:
-        # Get Header Information
-        OffsetData.clear()
-        f = file
-        f.seek(44)
-        fileSize = Int32(f)
-        # print("File Size: " + str(fileSize))
-        sectionsamount = UInt32(f)
-        endstringseco = 0
-        endstringstatico = 0
-        print("Amount of sections: " + str(sectionsamount))
-        newline()
+    # try:
+    # Get Header Information
+    OffsetData.clear()
+    f = file
+    f.seek(44)
+    fileSize = Int32(f)
+    # print("File Size: " + str(fileSize))
+    sectionsamount = UInt32(f)
+    endstringseco = 0
+    endstringstatico = 0
+    print("Amount of sections: " + str(sectionsamount))
+    newline()
 
-        for i in range(sectionsamount):
-            inlist = False
-            sectiontype = UInt32(f)
-            if sectiontype in list(secTypeArr):
-                inlist = True
-            sectionoffset = UInt32(f)
-            sectionsize = UInt32(f)
-            if inlist:
-                if secTypeArr.index(sectiontype) == 6:
-                    matoffset = sectionoffset
-                    matsize = sectionsize
-                if secTypeArr.index(sectiontype) == 7:
-                    endstringseco = sectionoffset
-                if secTypeArr.index(sectiontype) == 8:
-                    endstringstatico = sectionoffset
+    for i in range(sectionsamount):
+        inlist = False
+        sectiontype = UInt32(f)
+        if sectiontype in list(secTypeArr):
+            inlist = True
+        sectionoffset = UInt32(f)
+        sectionsize = UInt32(f)
+        if inlist:
+            if secTypeArr.index(sectiontype) == 6:
+                matoffset = sectionoffset
+                matsize = sectionsize
+            if secTypeArr.index(sectiontype) == 7:
+                endstringseco = sectionoffset
+            if secTypeArr.index(sectiontype) == 8:
+                endstringstatico = sectionoffset
 
-        if ftype == '.model':
-            if matsize >= 32:
+    if ftype == '.model':
+        if matsize >= 32:
 
-                f.seek(52 + (sectionsamount * 12) + 17)
-                if not endstringseco == 0:
-                    stringread = (endstringseco + 40) - (52 + (sectionsamount * 12) + 17)
-                else:
-                    stringread = (endstringstatico + 40) - (52 + (sectionsamount * 12) + 17)
-                strings = f.read(stringread - 4)
-                strings = strings.decode('utf-8')
-                DataEntrys = strings.split("\x00")
-                f.seek(52 + (sectionsamount * 12) + 17)
-                for i in DataEntrys:
-                    StringLen = len(i)
-                    OffsetData.append(f.tell())
-                    advance(f, StringLen + 1)
+            f.seek(52 + (sectionsamount * 12) + 17)
+            if not endstringseco == 0:
+                stringread = (endstringseco + 40) - (52 + (sectionsamount * 12) + 17)
+            else:
+                stringread = (endstringstatico + 40) - (52 + (sectionsamount * 12) + 17)
+            strings = f.read(stringread - 4)
+            strings = strings.decode('utf-8')
+            DataEntrys = strings.split("\x00")
+            f.seek(52 + (sectionsamount * 12) + 17)
+            for i in DataEntrys:
+                StringLen = len(i)
+                OffsetData.append(f.tell())
+                advance(f, StringLen + 1)
 
-                f.seek(matoffset + 36)
-                MaterialPathOffsets = []
-                MaterialOffsets = []
-                global MaterialAmount
-                MaterialAmount = round(matsize / 32)
-                global Materials
-                Materials = []
-                global MaterialPaths
-                MaterialPaths = []
-                for i in range(MaterialAmount):
-                    MaterialPathOffsets.append(UInt32(f) + 36)
-                    advance(f, 4)
-                    MaterialOffsets.append(UInt32(f) + 36)
-                    advance(f, 4)
-                for loop, i in enumerate(MaterialOffsets):
-                    f.seek(i)
-                    strlength = 0
-                    while True:
-                        byte = f.read(1)
-                        if not byte == b'\x00':
-                            pass
-                            strlength += 1
-                        else:
-                            back(f, 1)
-                            break
-                    f.seek(i)
-                    stringv = str(f.read(strlength))
-                    stringv = stringv[2:-1]
-                    Materials.append(stringv)
-                for loop, i in enumerate(MaterialPathOffsets):
-                    f.seek(i)
-                    strlength = 0
-                    while True:
-                        byte = f.read(1)
-                        if not byte == b'\x00':
-                            pass
-                            strlength += 1
-                        else:
-                            back(f, 1)
-                            break
-                    f.seek(i)
-                    strings = f.read(strlength)
-                    strings = strings.decode('UTF-8')
-                    MaterialPaths.append(strings)
-                # print(*MaterialPaths)
+            f.seek(matoffset + 36)
+            MaterialPathOffsets = []
+            MaterialOffsets = []
+            global MaterialAmount
+            MaterialAmount = round(matsize / 32)
+            global Materials
+            Materials = []
+            global MaterialPaths
+            MaterialPaths = []
+            for i in range(MaterialAmount):
+                MaterialPathOffsets.append(UInt32(f) + 36)
+                advance(f, 4)
+                MaterialOffsets.append(UInt32(f) + 36)
+                advance(f, 4)
+            for loop, i in enumerate(MaterialOffsets):
+                f.seek(i)
+                strlength = 0
+                while True:
+                    byte = f.read(1)
+                    if not byte == b'\x00':
+                        pass
+                        strlength += 1
+                    else:
+                        back(f, 1)
+                        break
+                f.seek(i)
+                stringv = str(f.read(strlength))
+                stringv = stringv[2:-1]
+                Materials.append(stringv)
+            for loop, i in enumerate(MaterialPathOffsets):
+                f.seek(i)
+                strlength = 0
+                while True:
+                    byte = f.read(1)
+                    if not byte == b'\x00':
+                        pass
+                        strlength += 1
+                    else:
+                        back(f, 1)
+                        break
+                f.seek(i)
+                strings = f.read(strlength)
+                strings = strings.decode('UTF-8')
+                MaterialPaths.append(strings)
+            # print(*MaterialPaths)
 
-                global LabelColl
-                global LabelColl2
-                global EntryColl
-                global ButtonColl
+            global LabelColl
+            global LabelColl2
+            global EntryColl
+            global ButtonColl
 
-                global MatLabelColl
-                global MatLabelColl2
-                global MatEntryColl
-                global MatButtonColl
+            global MatLabelColl
+            global MatLabelColl2
+            global MatEntryColl
+            global MatButtonColl
 
-                LabelColl = []
-                LabelColl2 = []
-                EntryColl = []
-                ButtonColl = []
+            LabelColl = []
+            LabelColl2 = []
+            EntryColl = []
+            ButtonColl = []
 
-                MatLabelColl = []
-                MatLabelColl2 = []
-                MatEntryColl = []
-                MatButtonColl = []
-                reg = NFrame.register(callback)
-                rowvar = 0
-                for loop, i in enumerate(MaterialPaths):
-                    rowvar += 1
-                    lv = Label(NFrame, text="Material " + str(loop) + " Path:").grid(row=rowvar, column=1, sticky=W)
-                    LabelColl.append(lv)
-                    var = StringVar()
-                    var.set(i)
-                    width = len(i)
-                    width = round(width)
-                    width = clamp(width, 1, 1080)
+            MatLabelColl = []
+            MatLabelColl2 = []
+            MatEntryColl = []
+            MatButtonColl = []
+            reg = NFrame.register(callback)
+            rowvar = 0
+            for loop, i in enumerate(MaterialPaths):
+                rowvar += 1
+                lv = ttk.Label(NFrame, text="Material " + str(loop) + " Path:").grid(row=rowvar, column=1, sticky=W)
+                LabelColl.append(lv)
+                var = StringVar()
+                var.set(i)
+                width = len(i)
+                width = round(width)
+                width = clamp(width, 1, 1080)
 
-                    def KeyPressed(id):
-                        length = (len(MaterialPaths[id])) - (len(EntryColl[id].get()))
-                        LabelColl2[id].config(text=str(length))
-                        if length < 0:
-                            LabelColl2[id].config(fg='red')
-                        else:
-                            LabelColl2[id].config(fg='white')
+                def KeyPressed(id):
+                    length = (len(MaterialPaths[id])) - (len(EntryColl[id].get()))
+                    LabelColl2[id].config(text=str(length))
+                    if length < 0:
+                        LabelColl2[id].config(fg='red')
+                    else:
+                        LabelColl2[id].config(fg='white')
 
-                    entryvar = Entry(NFrame, textvariable=var, width=width, validate="key",
-                                     validatecommand=(reg, '% P'))
+                entryvar = Entry(NFrame, textvariable=var, width=width, validate="key",
+                                 validatecommand=(reg, '% P'))
 
-                    entryvar.grid(row=rowvar, column=2, sticky=W)
+                entryvar.grid(row=rowvar, column=2, sticky=W)
 
-                    llb = Label(NFrame, text="Placeholder", bg="#232023", fg='white')
-                    llb.grid(row=rowvar, column=3, sticky=W)
-                    LabelColl2.append(llb)
+                llb = Label(NFrame, text="Placeholder", bg="#232023", fg='white')
+                llb.grid(row=rowvar, column=3, sticky=W)
+                LabelColl2.append(llb)
 
-                    def Reset(id):
-                        stringv2 = MaterialPaths[id]
-                        setText(EntryColl[id], stringv2)
-                    def Clear(id):
-                        stringv2 = MaterialPaths[id]
-                        setText(EntryColl[id], "")
-                    def FocusFrame(event):
-                        NFrame.focus_set()
+                def Reset(id):
+                    stringv2 = MaterialPaths[id]
+                    setText(EntryColl[id], stringv2)
 
-                    EntryColl.append(entryvar)
-                    entryvar.bind("<KeyRelease>", lambda event, x=EntryColl.index(entryvar): KeyPressed(x))
-                    entryvar.bind("<Return>", FocusFrame)
-                    b = Button(NFrame, text="Reset Material Path", command=lambda x=loop: [Reset(x), KeyPressed(x)])
-                    b.grid(row=rowvar, column=4, sticky=W)
-                    ButtonColl.append(b)
-                    b = Button(NFrame, text="Clear Material Path", command=lambda x=loop: [Clear(x), KeyPressed(x)])
-                    b.grid(row=rowvar, column=5, sticky=W)
-                    KeyPressed(loop)
+                def Clear(id):
+                    stringv2 = MaterialPaths[id]
+                    setText(EntryColl[id], "")
 
-                    rowvar += 1
-                    lv = Label(NFrame, text="Material " + str(loop) + " Name:").grid(row=rowvar, column=1, sticky=W)
-                    MatLabelColl.append(lv)
-                    var = StringVar()
-                    var.set(Materials[loop])
-                    width = len(Materials[loop])
-                    width = round(width)
-                    width = clamp(width, 1, 1080)
+                def FocusFrame(event):
+                    NFrame.focus_set()
 
-                    def KeyPressed2(id):
-                        length = (len(Materials[id])) - (len(MatEntryColl[id].get()))
-                        MatLabelColl2[id].config(text=str(length))
-                        if length < 0:
-                            MatLabelColl2[id].config(fg='red')
-                        else:
-                            MatLabelColl2[id].config(fg='white')
+                EntryColl.append(entryvar)
+                entryvar.bind("<KeyRelease>", lambda event, x=EntryColl.index(entryvar): KeyPressed(x))
+                entryvar.bind("<Return>", FocusFrame)
+                b = Button(NFrame, text="Reset Material Path", command=lambda x=loop: [Reset(x), KeyPressed(x)])
+                b.grid(row=rowvar, column=4, sticky=W)
+                ButtonColl.append(b)
+                b = Button(NFrame, text="Clear Material Path", command=lambda x=loop: [Clear(x), KeyPressed(x)])
+                b.grid(row=rowvar, column=5, sticky=W)
+                KeyPressed(loop)
 
-                    entryvar = Entry(NFrame, textvariable=var, width=width, validate="key",
-                                     validatecommand=(reg, '% P'))
+                rowvar += 1
+                lv = Label(NFrame, text="Material " + str(loop) + " Name:").grid(row=rowvar, column=1, sticky=W)
+                MatLabelColl.append(lv)
+                var = StringVar()
+                var.set(Materials[loop])
+                width = len(Materials[loop])
+                width = round(width)
+                width = clamp(width, 1, 1080)
 
-                    entryvar.grid(row=rowvar, column=2, sticky=W)
+                def KeyPressed2(id):
+                    length = (len(Materials[id])) - (len(MatEntryColl[id].get()))
+                    MatLabelColl2[id].config(text=str(length))
+                    if length < 0:
+                        MatLabelColl2[id].config(fg='red')
+                    else:
+                        MatLabelColl2[id].config(fg='white')
 
-                    llb = Label(NFrame, text="Placeholder", bg="#232023", fg='white')
-                    llb.grid(row=rowvar, column=3, sticky=W)
-                    MatLabelColl2.append(llb)
+                entryvar = Entry(NFrame, textvariable=var, width=width, validate="key",
+                                 validatecommand=(reg, '% P'))
 
-                    def Reset2(id):
-                        stringv2 = Materials[id]
-                        setText(MatEntryColl[id], stringv2)
+                entryvar.grid(row=rowvar, column=2, sticky=W)
 
-                    def Clear2(id):
-                        stringv2 = Materials[id]
-                        setText(MatEntryColl[id], "")
+                llb = Label(NFrame, text="Placeholder", bg="#232023", fg='white')
+                llb.grid(row=rowvar, column=3, sticky=W)
+                MatLabelColl2.append(llb)
 
-                    def FocusFrame2(event):
-                        NFrame.focus_set()
+                def Reset2(id):
+                    stringv2 = Materials[id]
+                    setText(MatEntryColl[id], stringv2)
 
-                    MatEntryColl.append(entryvar)
-                    entryvar.bind("<KeyRelease>", lambda event, x=MatEntryColl.index(entryvar): KeyPressed2(x))
-                    entryvar.bind("<Return>", FocusFrame2)
-                    b = Button(NFrame, text="Reset Material Name", command=lambda x=loop: [Reset2(x), KeyPressed2(x)])
-                    b.grid(row=rowvar, column=4, sticky=W)
-                    MatButtonColl.append(b)
-                    b = Button(NFrame, text="Clear Material Slot Name", command=lambda x=loop: [Clear2(x), KeyPressed2(x)])
-                    b.grid(row=rowvar, column=5, sticky=W)
-                    KeyPressed2(loop)
-                vsb = Scrollbar(NFrame)
-                vsb.grid(column=6, row=1, rowspan=50, sticky=N + S + W)
+                def Clear2(id):
+                    stringv2 = Materials[id]
+                    setText(MatEntryColl[id], "")
 
+                def FocusFrame2(event):
+                    NFrame.focus_set()
 
-    except:
-        print("errorfunc")
-        pass
+                MatEntryColl.append(entryvar)
+                entryvar.bind("<KeyRelease>", lambda event, x=MatEntryColl.index(entryvar): KeyPressed2(x))
+                entryvar.bind("<Return>", FocusFrame2)
+                b = Button(NFrame, text="Reset Material Name", command=lambda x=loop: [Reset2(x), KeyPressed2(x)])
+                b.grid(row=rowvar, column=4, sticky=W)
+                MatButtonColl.append(b)
+                b = Button(NFrame, text="Clear Material Slot Name", command=lambda x=loop: [Clear2(x), KeyPressed2(x)])
+                b.grid(row=rowvar, column=5, sticky=W)
+                KeyPressed2(loop)
+
+            # Add a canvas in that frame
+            # canvas = Canvas(NFrame, bg="yellow")
+            # canvas.grid(row=0, column=0, sticky="news")
+
+            # Link a scrollbar to the canvas
+            # vsb = Scrollbar(orient=VERTICAL, command=NFrame.yview)
+            # vsb.grid(row=1, column=6, sticky='ns', in_=NFrame)
+            # NFrame.configure(yscrollcommand=vsb.set)
+            # grid.configure
+            # NFrame.configure(yscrollcommand=vsb.set)
+            # NFrame.config(scrollregion=NFrame.bbox("all"))
+
+            # vsb = Scrollbar(NFrame)
+            # vsb.grid(column=6, row=1, rowspan=50, sticky=N + S + W)
+
+    #
+    # except:
+    #     print("errorfunc")
+    #     pass
 
 
 def drop_Func2(event, notebook, root):
     dragFile(notebook, root, event.data)
 
 
-
-def dragFile(notebook, root, f):
+def dragFile(notebook, root, f, dragged):
     global Open
     global File
     global NCan
@@ -397,7 +378,10 @@ def dragFile(notebook, root, f):
     global configbegino
     global configbegins
 
-    fo = f
+    if dragged:
+        fo = f
+    else:
+        fo = filedialog.askopenfilename(title="Select File", filetypes=(("model files", "*.model"), ("all files", "*")))
     exists = False
     CheckFile = NewFile(open(fo, 'rb'), pathlib.Path(fo).suffix, os.path.basename(str(fo)), fo)
     if CheckFile.Name in TabOBJ:
@@ -419,30 +403,60 @@ def dragFile(notebook, root, f):
     Open = True
     print(f)
 
-    try:
-        if pathlib.Path(fo).suffix == '.model':
-            File = NewFile(open(fo, 'rb'), pathlib.Path(fo).suffix, os.path.basename(str(fo)), fo)
-            NFrame = Frame(width=1200, height=800, bg="#232023")
-            NFrame.drop_target_register(DND_FILES)
-            NFrame.dnd_bind('<<Drop>>', lambda x: drop_Func2(event=x, notebook=notebook, root=root))
-            notebook.add(NFrame, text=File.Name)
-            TabOBJ.append(File.Name)
-            intvar = len(notebook.tabs())
-            intvar -= 1
-            TabID.append(intvar)
-            print(TabID)
-            selectvar = TabID.index(intvar)
-            notebook.select(TabID[selectvar])
-            print("GetInfo")
-            Get_Info(File.Obj, File.Type)
-            del CheckFile
-        else:
-            showinfo(title='Info',
-                     message="For now, only .model files are supported, more will be added in later versions!")
+    # try:
+    if pathlib.Path(fo).suffix == '.model':
+        File = NewFile(open(fo, 'rb'), pathlib.Path(fo).suffix, os.path.basename(str(fo)), fo)
 
-    except:
-        pass
-        print("error")
+        # Create Main Frame
+        main_frame = Frame(notebook, width=1200, height=800)
+        main_frame.drop_target_register(DND_FILES)
+        main_frame.dnd_bind('<<Drop>>', lambda x: drop_Func2(event=x, notebook=notebook, root=root))
+        # put the main frame into notebook
+        notebook.add(main_frame, text=File.Name)
+
+        # Create canvas inside main frame
+        my_canvas = Canvas(main_frame, highlightthickness=0)
+        my_canvas.pack(side=LEFT, fill=BOTH, expand=1)
+
+        # Create ScrollBar inside main frame
+        my_scrollbar = Scrollbar(main_frame, orient=VERTICAL, command=my_canvas.yview)
+        my_scrollbar.pack(side=RIGHT, fill=Y)
+        # my_scrollbar2 = Scrollbar(main_frame, orient=HORIZONTAL, command=my_canvas.xview)
+        # my_scrollbar2.pack(side=BOTTOM, fill=X)
+
+        my_canvas.configure(yscrollcommand=my_scrollbar.set)
+        # Creating Frame to show the Canvas
+        NFrame = Frame(my_canvas, width=1200, height=800)
+        NFrame.drop_target_register(DND_FILES)
+        NFrame.dnd_bind('<<Drop>>', lambda x: drop_Func2(event=x, notebook=notebook, root=root))
+        # Showing Canvas into/as a Frame
+        NFrame.bind('<Configure>', lambda e: my_canvas.configure(scrollregion=my_canvas.bbox("all")))
+        my_canvas.create_window((0, 0), window=NFrame, anchor="nw")
+
+        # canvas = Canvas(container, width=200, height=400)
+        # scroll = Scrollbar(container, command=canvas.yview)
+        # canvas.config(yscrollcommand=scroll.set, scrollregion=(0, 0, 100, 1000))
+        # canvas.pack(side=LEFT, fill=BOTH, expand=True)
+        # scroll.pack(side=RIGHT, fill=Y)
+        # canvas.create_window(100, 500, window=NFrame)
+
+        TabOBJ.append(File.Name)
+        intvar = len(notebook.tabs())
+        intvar -= 1
+        TabID.append(intvar)
+        print(TabID)
+        selectvar = TabID.index(intvar)
+        notebook.select(TabID[selectvar])
+        print("GetInfo")
+        Get_Info(File.Obj, File.Type)
+        del CheckFile
+    else:
+        showinfo(title='Info',
+                 message="For now, only .model files are supported, more will be added in later versions!")
+
+    # except:
+    #     pass
+    #     print("error")
 
 
 def saveFile(notebook, root, bool):
@@ -549,12 +563,19 @@ def saveFile(notebook, root, bool):
 
         initial = str(File.Name + "_new" + File.Type)
         # fn = asksaveasfile(initalfile = initial, defaultextension=".model",filetypes=[("All Files","*.*"),("Model Files","*.model")])
-        nf = asksaveasfile(mode='wb', defaultextension=".model",filetypes = (("Model Files","*.model"),("All Files","*.*")),title='Select file to save as')
+        nf = asksaveasfile(mode='wb', defaultextension=".model",
+                           filetypes=(("Model Files", "*.model"), ("All Files", "*.*")), title='Select file to save as')
         if nf is None:
             return
-        nf.write(ogfile)
-        nf.close()
-        #print(f.read())
+        try:
+            nf.write(ogfile)
+            newname = os.path.basename(nf.name)
+            notebook.tab(1, text=newname)
+            nf.close()
+            showinfo(title='Success saving file', message="Succesfully saved file to: " + str(nf.name))
+        except Exception as e:
+            showerror(title='Error saving file', message='There was an error saving the file: ' + repr(e))
+        # print(f.read())
         # for loop, i in enumerate(NewMaterials):
         #     encoded = i.encode()
         #     btf = Materials[loop].encode()
