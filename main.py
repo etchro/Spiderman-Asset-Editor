@@ -114,7 +114,17 @@ def verisoning():
     programversion = 'Alpha'
     completename = os.path.join(my_datadir, 'VersionInfo' + '.txt')
     if exists(completename):
-        versioning = 'https://raw.githubusercontent.com/bleedn/Spiderman-Model-Material-Parser/dev/versioning/versioning.txt'
+        newestversion = 'https://raw.githubusercontent.com/bleedn/Spiderman-Model-Material-Parser/dev/versioning/versioning.txt'
+        req = requests.get(newestversion)
+        req = req.text
+        versioninfo = open(completename, 'r')
+        currentversion = versioninfo.read()
+        print(req)
+        print(currentversion)
+        if not currentversion == req:
+            print("not newest")
+        else:
+            pass
     else:
         my_datadir.mkdir(parents=True)
         versioninfo = open(completename, 'w')
