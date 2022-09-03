@@ -166,7 +166,7 @@ programversion = 'Alpha'
 def verisoning():
     global programversion
     def checkversion():
-        newestversion = 'https://raw.githubusercontent.com/bleedn/Spiderman-Asset-Editor/main/versioning/versioning.txt'
+        newestversion = 'https://raw.githubusercontent.com/bleedn/Spiderman-Asset-Editor/dev/versioning/versioning.txt'
         req = requests.get(newestversion)
         req = req.text
         if not programversion == req:
@@ -177,11 +177,10 @@ def verisoning():
                                 new=0, autoraise=True)
             else:
                 pass
-            os.remove(completename)
-            os.rmdir(my_datadir)
         else:
             pass
     completename = os.path.join(my_datadir, 'VersionInfo' + '.txt')
+    checkversion()
     status = Label(IFrame, text="Version " + str(programversion), bg="#000000", fg="#bec2cb").pack(fill=BOTH, side=BOTTOM)
 
 verisoning()
