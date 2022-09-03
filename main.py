@@ -1,6 +1,18 @@
-import sys
-import struct
+import webbrowser
 
+import tkinterdnd2
+from functions import *
+
+global my_notebook
+global root
+global event
+from sys import exit
+import sv_ttk
+import base64
+import requests
+import sys
+import pathlib
+from os.path import exists
 
 # Open to see functions I used
 def UInt32(f):
@@ -56,53 +68,196 @@ def newline(n=1):
         print()
 
 
-if sys.argv[1] is None:
-    print(
-        "You didn't open this program with a file, either drag a .model onto the program to drag it as your arg in cmd")
-    input("Press Enter to close...")
-    sys.exit()
+# if sys.argv[1] is None:
+#     print(
+#         "You didn't open this program with a file, either drag a .model onto the program to drag it as your arg in cmd")
+#     input("Press Enter to close...")
+#     sys.exit()
 
-else:
-    try:
-        file = sys.argv[1]
-        f = open(file, 'rb')
-        f.seek(44)
-        fileSize = Int32(f)
-        sectionsamount = UInt32(f)
-        endstringseco = 0
-        endstringstatico = 0
-        for i in range(sectionsamount):
-            inlist = False
-            sectiontype = UInt32(f)
-            sectionoffset = UInt32(f)
-            sectionsize = UInt32(f)
-            if sectiontype == 4023987816:
-                endstringseco = sectionoffset
-            elif sectiontype == 675087235:
-                endstringstatico = sectionoffset
-        f.seek(52 + (sectionsamount * 12) + 17)
-        if not endstringseco == 0:
-            stringread = (endstringseco + 40) - (52 + (sectionsamount * 12) + 17)
+def drop_Func(event):
+    dragFile(my_notebook, root, event.data, True)
+
+
+# customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
+# customtkinter.set_default_color_theme("dark-blue")  # Themes: "blue" (standard), "green", "dark-blue"
+
+# root = customtkinter.CTk()
+root = tkinterdnd2.Tk()
+root.title('Spiderman Asset Editor')
+root.withdraw()
+
+import ctypes as ct
+
+
+def dark_title_bar(window):
+    window.update()
+    DWMWA_USE_IMMERSIVE_DARK_MODE = 20
+    set_window_attribute = ct.windll.dwmapi.DwmSetWindowAttribute
+    get_parent = ct.windll.user32.GetParent
+    hwnd = get_parent(window.winfo_id())
+    rendering_policy = DWMWA_USE_IMMERSIVE_DARK_MODE
+    value = 2
+    value = ct.c_int(value)
+    set_window_attribute(hwnd, rendering_policy, ct.byref(value), ct.sizeof(value))
+
+
+dark_title_bar(root)
+sv_ttk.set_theme("dark")
+
+# root.iconbitmap('./smpceditoricon.ico')
+
+style = ttk.Style()
+style.layout("TNotebook", [])
+style.configure("TNotebook", highlightbackground="#848a98", tabmargins=0)
+
+my_notebook = ttk.Notebook(root, padding=0, style="TNotebook")
+my_notebook.pack(fill=BOTH, expand=TRUE)
+my_notebook.enable_traversal()
+
+IFrame = Frame(width=1200, height=800, bd=0, highlightthickness=0, relief='ridge')
+IFrame.drop_target_register(DND_FILES)
+IFrame.dnd_bind('<<Drop>>', drop_Func)
+IFrame.pack_propagate(False)
+my_notebook.add(IFrame, text="Startup")
+
+menubar = Menu(root, tearoff=0, background='black', fg='black')
+#menubar = NewMenuBar(root)
+root.config(menu=menubar, highlightcolor='black')
+
+file_menu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="File", menu=file_menu)
+file_menu.add_command(label="Open File", command=lambda: dragFile(my_notebook, root, None, False))
+file_menu.add_command(label="Save File", command=lambda: saveFile(my_notebook, root, True))
+file_menu.add_separator()
+file_menu.add_command(label="Exit", command=exit)
+
+
+# edit_menu = Menu(menubar, tearoff=0)
+# menubar.add_cascade(label="Edit", menu=edit_menu)
+# edit_menu.add_command(label="Cut", command=donothing)
+# edit_menu.add_command(label="Copy", command=donothing)
+# edit_menu.add_command(label="Paste", command=donothing)
+
+def light_mode():
+    sv_ttk.set_theme("light")
+
+
+def dark_mode():
+    sv_ttk.set_theme("dark")
+
+
+view_menu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="View", menu=view_menu)
+view_menu.add_command(label="Light Mode (Warning, flashbang)", command=light_mode)
+view_menu.add_command(label="Dark Mode", command=dark_mode)
+
+
+help_menu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Help", menu=help_menu)
+help_menu.add_command(label="Report a bug/Request a feature", command=lambda: webbrowser.open(url='https://github.com/bleedn/Spiderman-Asset-Editor/issues'))
+
+
+# root.grid_rowconfigure(0, weight=1)
+# root.grid_rowconfigure(1, weight=1)
+
+undo = True
+autoseparators = True
+maxundo = -1
+
+
+def get_datadir() -> pathlib.Path:
+
+    """
+    Returns a parent directory path
+    where persistent application data can be stored.
+
+    # linux: ~/.local/share
+    # macOS: ~/Library/Application Support
+    # windows: C:/Users/<USER>/AppData/Roaming
+    """
+
+    home = pathlib.Path.home()
+
+    if sys.platform == "win32":
+        return home / "AppData/Roaming"
+    elif sys.platform == "linux":
+        return home / ".local/share"
+    elif sys.platform == "darwin":
+        return home / "Library/Application Support"
+
+# create your program's directory
+
+my_datadir = get_datadir() / "SMPCEditor"
+
+global programversion
+programversion = 'Alpha'
+def verisoning():
+    def checkversion():
+        newestversion = 'https://raw.githubusercontent.com/bleedn/Spiderman-Asset-Editor/main/versioning/versioning.txt'
+        req = requests.get(newestversion)
+        req = req.text
+        versioninfo = open(completename, 'r')
+        currentversion = versioninfo.read()
+        versioninfo.close()
+        if not currentversion == req:
+            update = messagebox.askquestion(title='Update Available!',
+                                            message='There is an update available for the SMPC Asset Editor! Would you like to go to the releases page?')
+            if update == 'yes':
+                webbrowser.open(url='https://github.com/bleedn/Spiderman-Asset-Editor/releases/latest',
+                                new=0, autoraise=True)
+            else:
+                pass
+            os.remove(completename)
+            os.rmdir(my_datadir)
         else:
-            stringread = (endstringstatico + 40) - (52 + (sectionsamount * 12) + 17)
-        strings = f.read(stringread - 4)
-        strings = strings.decode('utf-8')
-        DataEntrys = strings.split("\x00")
-        MaterialPaths = []
-        for i in DataEntrys:
-            if ".material" in i:
-                MaterialPaths.append(DataEntrys.index(i))
+            pass
+    global programversion
+    completename = os.path.join(my_datadir, 'VersionInfo' + '.txt')
+    if exists(completename):
+            checkversion()
+    else:
+        my_datadir.mkdir(parents=True)
+        versioninfo = open(completename, 'w')
+        versioninfo.write(programversion)
+        versioninfo.close()
+        del versioninfo
+        checkversion()
 
-        if not MaterialPaths:
-            print("Model has no material slots")
-        else:
-            for loop, i in enumerate(MaterialPaths):
-                print("Material Slot " + str(loop) + ": " + str(DataEntrys[i]))
+    versioninfo = open(completename, 'r')
+    currentversion = versioninfo.read()
+    versioninfo.close()
+    status = Label(IFrame, text="Version " + str(currentversion), bg="#000000", fg="#bec2cb").pack(fill=BOTH, side=BOTTOM)
 
-    except:
-        print('error')
+verisoning()
+
+Startup(IFrame)
+
+def on_closing():
+    if not len(my_notebook.tabs()) > 1:
+        root.destroy()
         pass
+        return
+    savev = saveFile(my_notebook, root, False)
+    if savev.bool == True:
+        root.destroy()
+        pass
+    else:
+        if messagebox.askokcancel("Quit", "Are you sure you want to quit?"):
+            root.destroy()
+        else:
+            pass
 
-    input("Press Enter to close...")
-    f.close()
-    sys.exit()
+
+root.protocol("WM_DELETE_WINDOW", on_closing)
+root.configure(bg="#000000")
+root.deiconify()
+root.mainloop()
+
+# try:
+#     file = sys.argv[1]
+#     f = open(file, 'rb')
+#
+#
+# input("Press Enter to close...")
+# f.close()
+# sys.exit()
