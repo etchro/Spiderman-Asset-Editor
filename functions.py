@@ -111,11 +111,6 @@ def newline(n=1):
         print()
 
 
-def aboutinfo():
-    showinfo(title='About',
-             message="This program was made to edit assets from Spiderman PC, by bleedn#3333 on discord, and is currently in version (Alpha)!")
-
-
 def clamp(num, min_value, max_value):
     return max(min(num, max_value), min_value)
 
@@ -365,7 +360,7 @@ def Get_Info(file, ftype):
 
 
 def drop_Func2(event, notebook, root):
-    dragFile(notebook, root, event.data)
+    dragFile(notebook, root, event.data, True)
 
 
 def dragFile(notebook, root, f, dragged):
@@ -396,7 +391,11 @@ def dragFile(notebook, root, f, dragged):
         saved = saveFile(notebook, root, False)
         messageboxv = messagebox.askquestion('Open File', 'Are you sure you want to open a new file?')
         if messageboxv == 'yes':
+            print(TabOBJ)
+            print(os.path.basename(str(fo)))
+            TabOBJ.remove(notebook.tab(1, "text"))
             notebook.forget(1)
+            #TabOBJ
             pass
         else:
             return
@@ -411,6 +410,21 @@ def dragFile(notebook, root, f, dragged):
         main_frame = Frame(notebook, width=1200, height=800)
         main_frame.drop_target_register(DND_FILES)
         main_frame.dnd_bind('<<Drop>>', lambda x: drop_Func2(event=x, notebook=notebook, root=root))
+
+        def get_datadir() -> pathlib.Path:
+            home = pathlib.Path.home()
+            if sys.platform == "win32":
+                return home / "AppData/Roaming"
+            elif sys.platform == "linux":
+                return home / ".local/share"
+            elif sys.platform == "darwin":
+                return home / "Library/Application Support"
+        my_datadir = get_datadir() / "SMPCEditor"
+        completename = os.path.join(my_datadir, 'VersionInfo' + '.txt')
+        versioninfo = open(completename, 'r')
+        currentversion = versioninfo.read()
+        versioninfo.close()
+        status = Label(main_frame, text="Version " + str(currentversion), bg="#000000", fg="#bec2cb").pack(fill=BOTH, side=BOTTOM)
         # put the main frame into notebook
         notebook.add(main_frame, text=File.Name)
 
@@ -424,14 +438,26 @@ def dragFile(notebook, root, f, dragged):
         # my_scrollbar2 = Scrollbar(main_frame, orient=HORIZONTAL, command=my_canvas.xview)
         # my_scrollbar2.pack(side=BOTTOM, fill=X)
 
+        # def _on_mousewheel(event):
+        #     shift = (event.state & 0x1) != 0
+        #     scroll = -1 if event.delta > 0 else 1
+        #     if shift:
+        #         my_canvas.xview_scroll(scroll, "units")
+        #     else:
+        #         my_canvas.yview_scroll(scroll, "units")
+
         my_canvas.configure(yscrollcommand=my_scrollbar.set)
+        # my_canvas.bind_all("<MouseWheel>", _on_mousewheel)
+
         # Creating Frame to show the Canvas
         NFrame = Frame(my_canvas, width=1200, height=800)
         NFrame.drop_target_register(DND_FILES)
         NFrame.dnd_bind('<<Drop>>', lambda x: drop_Func2(event=x, notebook=notebook, root=root))
         # Showing Canvas into/as a Frame
         NFrame.bind('<Configure>', lambda e: my_canvas.configure(scrollregion=my_canvas.bbox("all")))
+        #my_canvas.configure(width=NFrame.winfo_width(), height=NFrame.winfo_height())
         my_canvas.create_window((0, 0), window=NFrame, anchor="nw")
+
 
         # canvas = Canvas(container, width=200, height=400)
         # scroll = Scrollbar(container, command=canvas.yview)

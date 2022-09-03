@@ -84,6 +84,7 @@ def drop_Func(event):
 # root = customtkinter.CTk()
 root = tkinterdnd2.Tk()
 root.title('Spiderman Asset Editor')
+root.withdraw()
 
 import ctypes as ct
 
@@ -119,8 +120,8 @@ IFrame.dnd_bind('<<Drop>>', drop_Func)
 IFrame.pack_propagate(False)
 my_notebook.add(IFrame, text="Startup")
 
-
 menubar = Menu(root, tearoff=0, background='black', fg='black')
+#menubar = NewMenuBar(root)
 root.config(menu=menubar, highlightcolor='black')
 
 file_menu = Menu(menubar, tearoff=0)
@@ -150,11 +151,11 @@ menubar.add_cascade(label="View", menu=view_menu)
 view_menu.add_command(label="Light Mode (Warning, flashbang)", command=light_mode)
 view_menu.add_command(label="Dark Mode", command=dark_mode)
 
-about_menu = Menu(menubar, tearoff=0)
-menubar.add_cascade(label="About", menu=about_menu)
-about_menu.add_command(label="About", command=aboutinfo)
 
-status = Label(IFrame, text="Version 1.00 by bleedn", bg="#000000", fg="#bec2cb").pack(fill=BOTH, side=BOTTOM)
+help_menu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Help", menu=help_menu)
+help_menu.add_command(label="Report a bug/Request a feature", command=lambda: webbrowser.open(url='https://github.com/bleedn/Spiderman-Asset-Editor/issues'))
+
 
 # root.grid_rowconfigure(0, weight=1)
 # root.grid_rowconfigure(1, weight=1)
@@ -187,24 +188,22 @@ def get_datadir() -> pathlib.Path:
 # create your program's directory
 
 my_datadir = get_datadir() / "SMPCEditor"
-print(my_datadir)
 
 global programversion
 programversion = 'Alpha'
 def verisoning():
     def checkversion():
-        newestversion = 'https://raw.githubusercontent.com/bleedn/Spiderman-Model-Material-Parser/dev/versioning/versioning.txt'
+        newestversion = 'https://raw.githubusercontent.com/bleedn/Spiderman-Asset-Editor/main/versioning/versioning.txt'
         req = requests.get(newestversion)
         req = req.text
         versioninfo = open(completename, 'r')
         currentversion = versioninfo.read()
         versioninfo.close()
         if not currentversion == req:
-            print("not newest")
             update = messagebox.askquestion(title='Update Available!',
                                             message='There is an update available for the SMPC Asset Editor! Would you like to go to the releases page?')
             if update == 'yes':
-                webbrowser.open(url='https://github.com/bleedn/Spiderman-Model-Material-Parser/releases/latest',
+                webbrowser.open(url='https://github.com/bleedn/Spiderman-Asset-Editor/releases/latest',
                                 new=0, autoraise=True)
             else:
                 pass
@@ -224,8 +223,14 @@ def verisoning():
         del versioninfo
         checkversion()
 
+    versioninfo = open(completename, 'r')
+    currentversion = versioninfo.read()
+    versioninfo.close()
+    status = Label(IFrame, text="Version " + str(currentversion), bg="#000000", fg="#bec2cb").pack(fill=BOTH, side=BOTTOM)
 
 verisoning()
+
+Startup(IFrame)
 
 def on_closing():
     if not len(my_notebook.tabs()) > 1:
@@ -245,6 +250,7 @@ def on_closing():
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.configure(bg="#000000")
+root.deiconify()
 root.mainloop()
 
 # try:

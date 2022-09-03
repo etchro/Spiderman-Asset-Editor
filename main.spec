@@ -1,4 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
+from PyInstaller.utils.hooks import collect_data_files
+
+datas = []
+datas += collect_data_files('sv_ttk')
 
 
 block_cipher = None
@@ -8,11 +12,11 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=datas,
     hiddenimports=[],
     hookspath=['.'],
     hooksconfig={},
-    runtime_hooks=[],
+    runtime_hooks=['use_lib.py'],
     excludes=[],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
