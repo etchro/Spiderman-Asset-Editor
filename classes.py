@@ -91,6 +91,7 @@ class Startup():
             for i in range(num):
                 Label(frame, text='').pack()
 
+        programversion = 'Alpha'
         Label(frame, text='Spiderman Asset Editor', font='lucida 20 bold').pack(fill=BOTH)
         programdesc = 'Spiderman Asset Editor is a program that allows you to modify .model files. For now, ' \
                       'you can change strings (path and name) in order to nullify specific slots, or change materials ' \
@@ -101,12 +102,8 @@ class Startup():
                       'click on Help -> Report a bug/Request a feature.'
         Label(frame, text=programdesc, font='lucida 14', wraplength=1080).pack(fill=BOTH)
         blank(1)
-        completename = os.path.join(my_datadir, 'VersionInfo' + '.txt')
-        versioninfo = open(completename, 'r')
-        currentversion = versioninfo.read()
-        versioninfo.close()
 
-        Label(frame, text="What's new in version " + str(currentversion), font='lucida 20 bold').pack(fill=BOTH)
+        Label(frame, text="What's new in version " + str(programversion), font='lucida 20 bold').pack(fill=BOTH)
         changes = []
         changes.append('Added the ability to edit strings')
         changes.append('Added proper GUI')
@@ -116,7 +113,7 @@ class Startup():
 
         blank(1)
 
-        Label(frame, text="Notes about version " + str(currentversion), font='lucida 20 bold').pack(fill=BOTH)
+        Label(frame, text="Notes about version " + str(programversion), font='lucida 20 bold').pack(fill=BOTH)
         notes = []
         notes.append('Allows editing strings with strings of the same length (or less)')
         notes.append("Allows saving of files (I recommend 'ogfilename.new')")

@@ -8,11 +8,7 @@ global root
 global event
 from sys import exit
 import sv_ttk
-import base64
 import requests
-import sys
-import pathlib
-from os.path import exists
 
 # Open to see functions I used
 def UInt32(f):
@@ -165,41 +161,15 @@ autoseparators = True
 maxundo = -1
 
 
-def get_datadir() -> pathlib.Path:
-
-    """
-    Returns a parent directory path
-    where persistent application data can be stored.
-
-    # linux: ~/.local/share
-    # macOS: ~/Library/Application Support
-    # windows: C:/Users/<USER>/AppData/Roaming
-    """
-
-    home = pathlib.Path.home()
-
-    if sys.platform == "win32":
-        return home / "AppData/Roaming"
-    elif sys.platform == "linux":
-        return home / ".local/share"
-    elif sys.platform == "darwin":
-        return home / "Library/Application Support"
-
-# create your program's directory
-
-my_datadir = get_datadir() / "SMPCEditor"
-
 global programversion
 programversion = 'Alpha'
 def verisoning():
+    global programversion
     def checkversion():
         newestversion = 'https://raw.githubusercontent.com/bleedn/Spiderman-Asset-Editor/main/versioning/versioning.txt'
         req = requests.get(newestversion)
         req = req.text
-        versioninfo = open(completename, 'r')
-        currentversion = versioninfo.read()
-        versioninfo.close()
-        if not currentversion == req:
+        if not programversion == req:
             update = messagebox.askquestion(title='Update Available!',
                                             message='There is an update available for the SMPC Asset Editor! Would you like to go to the releases page?')
             if update == 'yes':
@@ -211,22 +181,8 @@ def verisoning():
             os.rmdir(my_datadir)
         else:
             pass
-    global programversion
     completename = os.path.join(my_datadir, 'VersionInfo' + '.txt')
-    if exists(completename):
-            checkversion()
-    else:
-        my_datadir.mkdir(parents=True)
-        versioninfo = open(completename, 'w')
-        versioninfo.write(programversion)
-        versioninfo.close()
-        del versioninfo
-        checkversion()
-
-    versioninfo = open(completename, 'r')
-    currentversion = versioninfo.read()
-    versioninfo.close()
-    status = Label(IFrame, text="Version " + str(currentversion), bg="#000000", fg="#bec2cb").pack(fill=BOTH, side=BOTTOM)
+    status = Label(IFrame, text="Version " + str(programversion), bg="#000000", fg="#bec2cb").pack(fill=BOTH, side=BOTTOM)
 
 verisoning()
 

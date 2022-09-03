@@ -411,20 +411,8 @@ def dragFile(notebook, root, f, dragged):
         main_frame.drop_target_register(DND_FILES)
         main_frame.dnd_bind('<<Drop>>', lambda x: drop_Func2(event=x, notebook=notebook, root=root))
 
-        def get_datadir() -> pathlib.Path:
-            home = pathlib.Path.home()
-            if sys.platform == "win32":
-                return home / "AppData/Roaming"
-            elif sys.platform == "linux":
-                return home / ".local/share"
-            elif sys.platform == "darwin":
-                return home / "Library/Application Support"
-        my_datadir = get_datadir() / "SMPCEditor"
-        completename = os.path.join(my_datadir, 'VersionInfo' + '.txt')
-        versioninfo = open(completename, 'r')
-        currentversion = versioninfo.read()
-        versioninfo.close()
-        status = Label(main_frame, text="Version " + str(currentversion), bg="#000000", fg="#bec2cb").pack(fill=BOTH, side=BOTTOM)
+        programversion = 'Alpha'
+        status = Label(main_frame, text="Version " + str(programversion), bg="#000000", fg="#bec2cb").pack(fill=BOTH, side=BOTTOM)
         # put the main frame into notebook
         notebook.add(main_frame, text=File.Name)
 
