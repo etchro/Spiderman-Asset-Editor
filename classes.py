@@ -91,7 +91,7 @@ class Startup():
             for i in range(num):
                 Label(frame, text='').pack()
 
-        programversion = 'Alpha'
+        programversion = 'Beta'
         Label(frame, text='Spiderman Asset Editor', font='lucida 20 bold').pack(fill=BOTH)
         programdesc = 'Spiderman Asset Editor is a program that allows you to modify .model files. For now, ' \
                       'you can change strings (path and name) in order to nullify specific slots, or change materials ' \

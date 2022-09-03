@@ -411,7 +411,7 @@ def dragFile(notebook, root, f, dragged):
         main_frame.drop_target_register(DND_FILES)
         main_frame.dnd_bind('<<Drop>>', lambda x: drop_Func2(event=x, notebook=notebook, root=root))
 
-        programversion = 'Alpha'
+        programversion = 'Beta'
         status = Label(main_frame, text="Version " + str(programversion), bg="#000000", fg="#bec2cb").pack(fill=BOTH, side=BOTTOM)
         # put the main frame into notebook
         notebook.add(main_frame, text=File.Name)
@@ -582,9 +582,11 @@ def saveFile(notebook, root, bool):
         if nf is None:
             return
         try:
+            global TabOBJ
             nf.write(ogfile)
             newname = os.path.basename(nf.name)
             notebook.tab(1, text=newname)
+            TabOBJ[0]=newname
             nf.close()
             showinfo(title='Success saving file', message="Succesfully saved file to: " + str(nf.name))
         except Exception as e:

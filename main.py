@@ -162,7 +162,7 @@ maxundo = -1
 
 
 global programversion
-programversion = 'Alpha'
+programversion = 'Beta'
 def verisoning():
     global programversion
     def checkversion():
